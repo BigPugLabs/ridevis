@@ -1,11 +1,69 @@
 import { InferModel } from 'drizzle-orm'
-import { int, mysqlTableCreator, text } from 'drizzle-orm/mysql-core'
+import { datetime, index, int, mysqlTableCreator, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/mysql-core'
 
 const mysqlTable = mysqlTableCreator((name) => `rideviz_${name}`)
 
 export const users = mysqlTable('users', {
-    id: int('id').primaryKey(),
-    name: text('name').notNull(),
-})
+    id: varchar('id', { length: 191 }).primaryKey().notNull(),
+    name: varchar('name', { length: 191 }).notNull(),
+    email: varchar('email', { length: 191 }),
+    emailVerified: timestamp('emailVerified'),
+    image: varchar('image', { length: 191 }),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow()
+},
+    user => ({ emailIndex: uniqueIndex('users__email__idx').on(user.email) })
+)
 
+export const accounts = mysqlTable('accounts', {
+    id: varchar('id', { length: 191 }).primaryKey().notNull(),
+    userId: varchar('userId', { length: 191 }).notNull(),
+    type: varchar('type', { length: 191 }).notNull(),
+    provider: varchar('provider', { length: 191 }).notNull(),
+    providerAccountId: varchar('providerAccountId', { length: 191 }).notNull(),
+    access_token: text('access_token'),
+    expires_in: int('expires_in'),
+    id_token: text('id_token'),
+    refresh_token: text('refresh_token'),
+    refresh_token_expires_in: int('refresh_token_expires_in'),
+    scope: varchar('scope', { length: 191 }),
+    token_type: varchar('token_type', { length: 191 }),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow()
+},
+    account => ({
+        providerProviderAccountIdIndex: uniqueIndex('accounts__provider__providerAccountId__idx').on(account.provider, account.providerAccountId),
+        userIdIndex: index('accounts__userId__idx').on(account.userId)
+    })
+)
+
+export const sessions = mysqlTable('sessions', {
+    id: varchar('id', { length: 191 }).primaryKey().notNull(),
+    sessionToken: varchar('sessionToken', { length: 191 }).notNull(),
+    userId: varchar('userId', { length: 191 }).notNull(),
+    expires: datetime('expires').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow()
+},
+    session => ({
+        sessionTokenIndex: uniqueIndex('sessions__sessionToken__idx').on(session.sessionToken),
+        userIdIndex: index('sessions__userId__idx').on(session.userId)
+    })
+)
+
+export const verificationTokens = mysqlTable('verification_tokens', {
+    identifier: varchar('identifier', { length: 191 }).primaryKey().notNull(),
+    token: varchar('token', { length: 191 }).notNull(),
+    expires: datetime('expires').notNull(),
+    created_at: timestamp('created_at').notNull().defaultNow(),
+    updated_at: timestamp('updated_at').notNull().defaultNow().onUpdateNow()
+},
+    verificationToken => ({
+        tokenIndex: uniqueIndex('verification_tokens__token__idx').on(verificationToken.token)
+    })
+)
+
+export type Account = InferModel<typeof accounts>
+export type Sessions = InferModel<typeof sessions>
 export type User = InferModel<typeof users>
+export type VerificationToken = InferModel<typeof verificationTokens>
