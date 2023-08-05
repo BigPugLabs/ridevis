@@ -5,8 +5,8 @@ const mysqlTable = mysqlTableCreator((name) => `rideviz_${name}`)
 
 export const users = mysqlTable('users', {
     id: varchar('id', { length: 191 }).primaryKey().notNull(),
-    name: varchar('name', { length: 191 }).notNull(),
-    email: varchar('email', { length: 191 }),
+    name: varchar('name', { length: 191 }),
+    email: varchar('email', { length: 191 }).notNull(),
     emailVerified: timestamp('emailVerified'),
     image: varchar('image', { length: 191 }),
     created_at: timestamp('created_at').notNull().defaultNow(),
@@ -25,7 +25,7 @@ export const accounts = mysqlTable('accounts', {
     expires_in: int('expires_in'),
     id_token: text('id_token'),
     refresh_token: text('refresh_token'),
-    refresh_token_expires_in: int('refresh_token_expires_in'),
+    // refresh_token_expires_in: int('refresh_token_expires_in'),
     scope: varchar('scope', { length: 191 }),
     token_type: varchar('token_type', { length: 191 }),
     created_at: timestamp('created_at').notNull().defaultNow(),
