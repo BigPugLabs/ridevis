@@ -1,4 +1,4 @@
-import { accounts, users } from '@/db/schema'
+import { accounts, sessions, users, verificationTokens } from '@/db/schema'
 import type { Adapter } from '@auth/core/adapters'
 import { createId } from '@paralleldrive/cuid2'
 import { and, eq } from 'drizzle-orm'
@@ -57,33 +57,76 @@ export default function DrizzleAdaptor(db: PlanetScaleDatabase): Adapter {
                 id_token: account.id_token,
                 refresh_token: account.refresh_token,
                 // no longer required, but causes type errors! bug or depracated? 
-                //refresh_token_expires_in: account.refresh_token_expires_in,
+                refresh_token_expires_in: account.refresh_token_expires_in as number,
                 scope: account.scope,
                 token_type: account.token_type
             })
         },
         async unlinkAccount({ providerAccountId, provider }) {
-            return
+            await db.delete(accounts).where(and(eq(accounts.provider, provider), eq(accounts.providerAccountId, providerAccountId)))
         },
         async createSession({ sessionToken, userId, expires }) {
-            return
+            await db.insert(sessions).values({
+                id: createId(),
+                expires: expires,
+                sessionToken: sessionToken,
+                userId: userId
+            })
+            const rows = await db.select().from(sessions).where(eq(sessions.sessionToken, sessionToken)).limit(1)
+            if (!rows[0]) throw new Error("User session not created")
+            return rows[0]
         },
         async getSessionAndUser(sessionToken) {
-            return
+            const rows = await db.select({
+                user: users,
+                session: {
+                    id: sessions.id,
+                    userId: sessions.userId,
+                    sessionToken: sessions.sessionToken,
+                    expires: sessions.expires
+                }
+            }).from(sessions)
+                .innerJoin(users, eq(users.id, sessions.userId))
+                .where(eq(sessions.sessionToken, sessionToken))
+                .limit(1)
+
+            if (!rows[0]) return null
+            const { user, session } = rows[0]
+            return {
+                user,
+                session: {
+                    id: session.id,
+                    userId: session.userId,
+                    sessionToken: session.sessionToken,
+                    expires: session.expires
+                }
+            }
         },
-        async updateSession({ sessionToken }) {
-            return
+
+        async updateSession(session) {
+            db.update(sessions).set(session).where(eq(sessions.sessionToken, session.sessionToken))
+            const rows = await db.select().from(sessions).where(eq(sessions.sessionToken, session.sessionToken)).limit(1)
+            if (!rows[0]) throw new Error("Updating session failed")
+            return rows[0]
         },
         async deleteSession(sessionToken) {
-            return
+            await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken))
         },
         async createVerificationToken({ identifier, expires, token }) {
-            return
+            await db.insert(verificationTokens).values({ expires, identifier, token })
+            const rows = await db.select().from(verificationTokens).where(eq(verificationTokens.token, token)).limit(1)
+            if (!rows[0]) throw new Error("Unable to create verification token")
+            return rows[0]
         },
         async useVerificationToken({ identifier, token }) {
-            return
+            const rows = await db.select().from(verificationTokens)
+                .where(and(eq(verificationTokens.token, token),
+                    eq(verificationTokens.identifier, identifier)))
+            if (!rows[0]) return null
+            await db.delete(verificationTokens).where(and(eq(verificationTokens.token, token),
+                eq(verificationTokens.identifier, identifier)))
+            return rows[0]
         },
     }
 }
-
 
