@@ -1,17 +1,16 @@
-import { db } from "@/db"
-import { users } from "@/db/schema"
+import { auth } from "@/auth"
+import { SignIn, SignOut } from "@/components/auth"
 
 export default async function Login() {
-    const data = await db.query.users.findMany()
-    console.log(data)
-    return (
-        <>
-            <h1>Login</h1>
-            <ul>
-                {data.map(e => {
-                    return <li>{e}</li>
-                })}
-            </ul>
-        </>
-    )
+    const session = await auth()
+    if (session) {
+        return (
+            <>
+                <pre>{JSON.stringify(session, null, 2)}</pre>
+                <SignOut>Sign out</SignOut>
+            </>
+        )
+    } else {
+        return <SignIn provider="strava">Sign in with Strava</SignIn>
+    }
 }

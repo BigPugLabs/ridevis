@@ -4,20 +4,20 @@ import { createId } from '@paralleldrive/cuid2'
 import { and, eq } from 'drizzle-orm'
 import type { PlanetScaleDatabase } from 'drizzle-orm/planetscale-serverless'
 
-export default function DrizzleAdaptor(db: PlanetScaleDatabase): Adapter {
+export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
     return {
-        async createUser(userData) {
+        async createUser(userData){
+            const id = createId()
             await db.insert(users).values({
-                id: createId(),
-                email: userData.email,
+                id,
+                email: userData.email || "null@example.com",
                 emailVerified: userData.emailVerified,
                 name: userData.name,
                 image: userData.image,
             })
-            const rows = await db.select().from(users).where(eq(users.email, userData.email)).limit(1)
-            const row = rows[0]
-            if (!row) throw new Error("User not found")
-            return row
+            const rows = await db.select().from(users).where(eq(users.id, id)).limit(1)
+            if (!rows[0]) throw new Error("User not found")
+            return rows[0]
         },
         async getUser(id) {
             const rows = await db.select().from(users).where(eq(users.id, id)).limit(1)
@@ -33,7 +33,7 @@ export default function DrizzleAdaptor(db: PlanetScaleDatabase): Adapter {
                 .innerJoin(accounts, eq(users.id, accounts.userId))
                 .where(and(eq(accounts.providerAccountId, providerAccountId), eq(accounts.provider, provider)))
                 .limit(1)
-            return rows[0].users ?? null
+            return rows[0]?.users ?? null
         },
         async updateUser({ id, ...userData }) {
             if (!id) throw new Error("User not found")
