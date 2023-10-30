@@ -10,7 +10,7 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
             const id = createId()
             await db.insert(users).values({
                 id,
-                email: userData.email || "null@example.com",
+                email: userData.email || `${id}@example.com`,
                 emailVerified: userData.emailVerified,
                 name: userData.name,
                 image: userData.image,
