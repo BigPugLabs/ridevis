@@ -1,5 +1,5 @@
 import { InferModel, sql } from 'drizzle-orm'
-import { boolean, datetime, float, index, int, mysqlTableCreator, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/mysql-core'
+import { bigint, boolean, datetime, double, float, index, int, mysqlTableCreator, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/mysql-core'
 
 const mysqlTable = mysqlTableCreator((name) => `rideviz_${name}`)
 
@@ -21,10 +21,10 @@ export const accounts = mysqlTable('accounts', {
     type: varchar('type', { length: 191 }).notNull(),
     provider: varchar('provider', { length: 191 }).notNull(),
     providerAccountId: varchar('providerAccountId', { length: 191 }).notNull(),
-    access_token: text('access_token'),
+    access_token: text('access_token').notNull(),
     expires_in: int('expires_in'),
     id_token: text('id_token'),
-    refresh_token: text('refresh_token'),
+    refresh_token: text('refresh_token').notNull(),
     refresh_token_expires_in: int('refresh_token_expires_in'),
     scope: varchar('scope', { length: 191 }),
     token_type: varchar('token_type', { length: 191 }),
@@ -64,9 +64,9 @@ export const verificationTokens = mysqlTable('verification_tokens', {
 )
 
 export const activities = mysqlTable('activities', {
-    id: int('id').primaryKey().notNull(),
+    id: bigint('id', { mode: "number" }).primaryKey().notNull(),
     external_id: varchar('external_id', { length: 191 }),
-    upload_id: int('upload_id').notNull(),
+    upload_id: bigint('upload_id', { mode: "number" }).notNull(),
     athlete: varchar('athlete', { length: 191 }).notNull(),
     name: varchar('name', { length: 191 }),
     distance: float('distance'),
@@ -92,8 +92,8 @@ export const activities = mysqlTable('activities', {
     map_id: varchar('map_id', { length: 191 }),
     trainer: boolean('trainer'),
     commute: boolean('commute'),
-    manual: boolean('commute'),
-    private: boolean('commute'),
+    manual: boolean('manual'),
+    private: boolean('private'),
     flagged: boolean('flagged'),
     workout_type: int('workout_type'),
     upload_id_str: varchar('upload_id_str', { length: 191 }),
@@ -110,8 +110,75 @@ export const activities = mysqlTable('activities', {
     })
 )
 
+
+export const activityStats = mysqlTable('activity_stats', {
+    athlete: varchar('athlete', { length: 191 }).primaryKey().notNull(),
+    biggest_ride_distance: double('biggest_ride_distance'),
+    biggest_climb_elevation_gain: double('biggest_climb_elevation_gain'),
+    recent_ride_count: int('recent_ride_count'),
+    recent_ride_distance: float('recent_ride_distance'),
+    recent_ride_moving_time: int('recent_ride_moving_time'),
+    recent_ride_elapsed_time: int('recent_ride_elapsed_time'),
+    recent_ride_elevation_gain: float('recent_ride_elevation_gain'),
+    recent_ride_achievement_count: int('recent_ride_achievement_count'),
+    recent_run_count: int('recent_run_count'),
+    recent_run_distance: float('recent_run_distance'),
+    recent_run_moving_time: int('recent_run_moving_time'),
+    recent_run_elapsed_time: int('recent_run_elapsed_time'),
+    recent_run_elevation_gain: float('recent_run_elevation_gain'),
+    recent_run_achievement_count: int('recent_run_achievement_count'),
+    recent_swim_count: int('recent_swim_count'),
+    recent_swim_distance: float('recent_swim_distance'),
+    recent_swim_moving_time: int('recent_swim_moving_time'),
+    recent_swim_elapsed_time: int('recent_swim_elapsed_time'),
+    recent_swim_elevation_gain: float('recent_swim_elevation_gain'),
+    recent_swim_achievement_count: int('recent_swim_achievement_count'),
+    ytd_ride_count: int('ytd_ride_count'),
+    ytd_ride_distance: float('ytd_ride_distance'),
+    ytd_ride_moving_time: int('ytd_ride_moving_time'),
+    ytd_ride_elapsed_time: int('ytd_ride_elapsed_time'),
+    ytd_ride_elevation_gain: float('ytd_ride_elevation_gain'),
+    ytd_ride_achievement_count: int('ytd_ride_achievement_count'),
+    ytd_run_count: int('ytd_run_count'),
+    ytd_run_distance: float('ytd_run_distance'),
+    ytd_run_moving_time: int('ytd_run_moving_time'),
+    ytd_run_elapsed_time: int('ytd_run_elapsed_time'),
+    ytd_run_elevation_gain: float('ytd_run_elevation_gain'),
+    ytd_run_achievement_count: int('ytd_run_achievement_count'),
+    ytd_swim_count: int('ytd_swim_count'),
+    ytd_swim_distance: float('ytd_swim_distance'),
+    ytd_swim_moving_time: int('ytd_swim_moving_time'),
+    ytd_swim_elapsed_time: int('ytd_swim_elapsed_time'),
+    ytd_swim_elevation_gain: float('ytd_swim_elevation_gain'),
+    ytd_swim_achievement_count: int('ytd_swim_achievement_count'),
+    all_ride_count: int('all_ride_count'),
+    all_ride_distance: float('all_ride_distance'),
+    all_ride_moving_time: int('all_ride_moving_time'),
+    all_ride_elapsed_time: int('all_ride_elapsed_time'),
+    all_ride_elevation_gain: float('all_ride_elevation_gain'),
+    all_ride_achievement_count: int('all_ride_achievement_count'),
+    all_run_count: int('all_run_count'),
+    all_run_distance: float('all_run_distance'),
+    all_run_moving_time: int('all_run_moving_time'),
+    all_run_elapsed_time: int('all_run_elapsed_time'),
+    all_run_elevation_gain: float('all_run_elevation_gain'),
+    all_run_achievement_count: int('all_run_achievement_count'),
+    all_swim_count: int('all_swim_count'),
+    all_swim_distance: float('all_swim_distance'),
+    all_swim_moving_time: int('all_swim_moving_time'),
+    all_swim_elapsed_time: int('all_swim_elapsed_time'),
+    all_swim_elevation_gain: float('all_swim_elevation_gain'),
+    all_swim_achievement_count: int('all_swim_achievement_count'),
+},
+    activityStats => ({
+        athleteIdIndex: index('activity_stats__athleteId__idx').on(activityStats.athlete)
+    })
+)
+
 export type Account = InferModel<typeof accounts>
 export type Sessions = InferModel<typeof sessions>
 export type User = InferModel<typeof users>
 export type VerificationToken = InferModel<typeof verificationTokens>
 export type Activity = InferModel<typeof activities>
+export type ActivityStats = InferModel<typeof activityStats>
+
