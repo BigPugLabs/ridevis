@@ -78,6 +78,7 @@ export async function listActivities(id: string) {
         response = await payload.json()
     }
 
+    // BUG - map is not a function on first run
     const values = response.map((a: SummaryActivity) => ({
         id: a.id,
         external_id: a.external_id,
@@ -91,8 +92,8 @@ export async function listActivities(id: string) {
         elev_high: a.elev_high,
         elev_low: a.elev_low,
         sport_type: a.sport_type,
-        start_date: a.start_date.slice(0,-1),
-        start_date_local: a.start_date_local.slice(0,-1),
+        start_date: a.start_date.slice(0, -1),
+        start_date_local: a.start_date_local.slice(0, -1),
         timezone: a.timezone,
         start_lat: a.start_latlng[0],
         start_lng: a.start_latlng[1],
@@ -121,5 +122,5 @@ export async function listActivities(id: string) {
         embed_token: "",
     }))
 
-    await db.insert(activities).values(values)
+    await db.insert(activities).values(values).onDuplicateKeyUpdate({ set: { id: sql`id` } })
 }
