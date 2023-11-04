@@ -8,9 +8,9 @@ import { accounts } from "@/db/schema"
 import { db } from "@/db"
 import { eq } from "drizzle-orm"
 
-async function Stats(props: { id: string | null}) {
-    if (props.id) {
-        const numActivities = await countActivities(props.id)
+async function Stats(props: { athleteId: string | null }) {
+    if (props.athleteId) {
+        const numActivities = await countActivities(props.athleteId)
         return <div>{numActivities}</div>
     }
     return <div>Unknown</div>
@@ -25,9 +25,6 @@ async function updateActivities(formData: FormData) {
     }
 }
 
-
-
-
 export default async function Profile() {
 
     const session = await auth()
@@ -38,21 +35,21 @@ export default async function Profile() {
         .where(eq(accounts.userId, session.user.id))
 
     const athlete = athleteAccountId[0].athlete || null
-    //    TODO
-    //    listActivities(session.user.id)
 
     if (session) {
         return (
             <>
                 <div>Profile for {session.user.name}</div>
                 <Suspense fallback={<div>loading...</div>}>
-                    <Stats id={athlete} />
+                    <Stats athleteId={athlete} />
                 </Suspense>
                 <form action={updateActivities}>
                     <input type="hidden" name="id" value={session.user.id} />
                     <button type="submit">Refresh activities</button>
                 </form>
-                <ActivityList id={athlete} />
+                <Suspense fallback={<div>loading...</div>}>
+                    <ActivityList athleteId={athlete} />
+                </Suspense>
             </>
         )
     } else {
