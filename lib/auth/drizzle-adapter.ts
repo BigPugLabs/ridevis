@@ -6,11 +6,11 @@ import type { PlanetScaleDatabase } from 'drizzle-orm/planetscale-serverless'
 
 export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
     return {
-        async createUser(userData){
+        async createUser(userData) {
             const id = createId()
             await db.insert(users).values({
                 id,
-                email: userData.email || "null@example.com",
+                email: userData.email || `${id}@example.com`,
                 emailVerified: userData.emailVerified,
                 name: userData.name,
                 image: userData.image,
@@ -46,21 +46,23 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
             await db.delete(users).where(eq(users.id, userId))
         },
         async linkAccount(account) {
-            await db.insert(accounts).values({
-                id: createId(),
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                type: account.type,
-                userId: account.userId,
-                access_token: account.access_token,
-                expires_in: account.expires_in,
-                id_token: account.id_token,
-                refresh_token: account.refresh_token,
-                // no longer required, but causes type errors! bug or depracated? 
-                refresh_token_expires_in: account.refresh_token_expires_in as number,
-                scope: account.scope,
-                token_type: account.token_type
-            })
+            if (account.access_token && account.refresh_token) {
+                await db.insert(accounts).values({
+                    id: createId(),
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    type: account.type,
+                    userId: account.userId,
+                    access_token: account.access_token,
+                    expires_in: account.expires_in,
+                    id_token: account.id_token,
+                    refresh_token: account.refresh_token,
+                    // no longer required, but causes type errors! bug or depracated? 
+                    refresh_token_expires_in: account.refresh_token_expires_in as number,
+                    scope: account.scope,
+                    token_type: account.token_type
+                })
+            }
         },
         async unlinkAccount({ providerAccountId, provider }) {
             await db.delete(accounts).where(and(eq(accounts.provider, provider), eq(accounts.providerAccountId, providerAccountId)))

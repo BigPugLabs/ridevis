@@ -16,7 +16,15 @@ export const { handlers: { GET, POST }, auth } = NextAuth({
     secret: process.env.NEXTAUTH_SECRET,
     providers: [Strava({
         clientId: process.env.STRAVA_ID as string,
-        clientSecret: process.env.STRAVA_SECRET as string
+        clientSecret: process.env.STRAVA_SECRET as string,
+        authorization: {
+            url: "https://www.strava.com/api/v3/oauth/authorize",
+            params: {
+                scope: "activity:read",
+                approval_prompt: "auto",
+                response_type: "code",
+            },
+        },
     })],
     session: {
         strategy: "database"
