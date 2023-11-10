@@ -2,6 +2,7 @@ import type { SummaryActivity } from "./interfaces"
 import { db } from "@/db";
 import { accounts, activities } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
 
 export async function countActivities(id: string) {
     const numActivities = await db.select({ count: sql<number>`count(*)` })
@@ -32,7 +33,7 @@ async function refreshToken(id: string, refreshToken: string) {
         .set({ access_token: newTokens.access_token })
         .where(eq(accounts.userId, id))
 
-    return newTokens.access_Token
+    return newTokens.access_token
 }
 
 export async function checkSyncNeeded(id: string) {
@@ -60,25 +61,27 @@ export async function listActivities(id: string) {
             method: "GET",
             headers: {
                 Authorization: "Bearer " + accessToken
-            }
+            },
+            next: { tags: ["accessToken"] }
         })
     let response = await payload.json()
 
     if (response.errors) {
         // refresh token and try again
         accessToken = await refreshToken(id, tokenResult[0].refreshToken)
+        revalidateTag("accessToken")
 
         payload = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=30",
             {
                 method: "GET",
                 headers: {
                     Authorization: "Bearer " + accessToken
-                }
+                },
+                next: { tags: ["accessToken"] }
             })
         response = await payload.json()
     }
 
-    // BUG - map is not a function on first run
     const values = response.map((a: SummaryActivity) => ({
         id: a.id,
         external_id: a.external_id,
