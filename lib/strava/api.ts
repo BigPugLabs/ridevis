@@ -2,7 +2,6 @@ import type { SummaryActivity } from "./interfaces"
 import { db } from "@/db";
 import { accounts, activities } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
 
 export async function countActivities(id: string) {
     const numActivities = await db.select({ count: sql<number>`count(*)` })
@@ -61,23 +60,20 @@ export async function listActivities(id: string) {
             method: "GET",
             headers: {
                 Authorization: "Bearer " + accessToken
-            },
-            next: { tags: ["accessToken"] }
+            }
         })
     let response = await payload.json()
 
     if (response.errors) {
         // refresh token and try again
         accessToken = await refreshToken(id, tokenResult[0].refreshToken)
-        revalidateTag("accessToken")
 
         payload = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=30",
             {
                 method: "GET",
                 headers: {
                     Authorization: "Bearer " + accessToken
-                },
-                next: { tags: ["accessToken"] }
+                }
             })
         response = await payload.json()
     }
