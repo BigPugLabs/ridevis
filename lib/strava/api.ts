@@ -32,7 +32,7 @@ async function refreshToken(id: string, refreshToken: string) {
         .set({ access_token: newTokens.access_token })
         .where(eq(accounts.userId, id))
 
-    return newTokens.access_Token
+    return newTokens.access_token
 }
 
 export async function checkSyncNeeded(id: string) {
@@ -78,7 +78,6 @@ export async function listActivities(id: string) {
         response = await payload.json()
     }
 
-    // BUG - map is not a function on first run
     const values = response.map((a: SummaryActivity) => ({
         id: a.id,
         external_id: a.external_id,
