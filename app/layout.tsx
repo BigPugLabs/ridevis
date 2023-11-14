@@ -30,7 +30,7 @@ export default function RootLayout({
                             <li><Link href="/">Home</Link></li>
                         </ul>
                     </div>
-                    <div id="content" className="w-4/5">
+                    <div id="content" className="w-4/5 max-w-4xl">
                         {children}
                     </div>
                 </div>
