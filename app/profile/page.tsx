@@ -4,7 +4,7 @@ import { Suspense } from "react"
 
 import { ActivityList } from "@/components/activityList"
 import { revalidatePath } from "next/cache"
-import { accounts } from "@/db/schema"
+import { accounts, users } from "@/db/schema"
 import { db } from "@/db"
 import { eq } from "drizzle-orm"
 
@@ -29,14 +29,15 @@ export default async function Profile() {
 
     const session = await auth()
 
-    const athleteAccountId = await db
-        .select({ athlete: accounts.providerAccountId })
-        .from(accounts)
-        .where(eq(accounts.userId, session.user.id))
+    if (session?.user?.email) {
+        const athleteAccountId = await db
+            .select({ athlete: accounts.providerAccountId })
+            .from(accounts)
+            .where(eq(accounts.userId, users.id))
+            .innerJoin(users, eq(users.email, session.user.email))
 
-    const athlete = athleteAccountId[0].athlete || null
+        const athlete = athleteAccountId[0].athlete || null
 
-    if (session) {
         return (
             <>
                 <div>Profile for {session.user.name}</div>
