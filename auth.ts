@@ -3,14 +3,6 @@ import { db } from '@/db'
 import NextAuth, { DefaultSession } from "next-auth";
 import Strava from 'next-auth/providers/strava'
 
-declare module 'next-auth' {
-    interface Session {
-        user: {
-            id: string
-        } & DefaultSession['user']
-    }
-}
-
 export const { handlers: { GET, POST }, auth } = NextAuth({
     adapter: DrizzleAdapter(db),
     secret: process.env.NEXTAUTH_SECRET,

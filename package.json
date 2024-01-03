@@ -10,26 +10,26 @@
     "dbpush": "drizzle-kit push:mysql"
   },
   "dependencies": {
-    "@auth/core": "^0.10.0",
+    "@auth/core": "^0.19.0",
     "@paralleldrive/cuid2": "^2.2.1",
     "@planetscale/database": "^1.10.0",
-    "@types/node": "20.4.5",
-    "@types/react": "18.2.18",
-    "@types/react-dom": "18.2.7",
-    "autoprefixer": "10.4.14",
-    "drizzle-orm": "^0.27.2",
-    "eslint": "8.46.0",
-    "eslint-config-next": "13.4.12",
-    "next": "^13.4.12",
-    "next-auth": "^0.0.0-manual.024ba3e6",
-    "postcss": "8.4.27",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "drizzle-orm": "^0.29.3",
+    "eslint": "^8.46.0",
+    "eslint-config-next": "^14.0.4",
+    "next": "^14.0.4",
+    "next-auth": "5.0.0-beta.4",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "dotenv": "^16.3.1",
-    "drizzle-kit": "^0.19.12"
+    "drizzle-kit": "^0.20.9"
   }
 }
