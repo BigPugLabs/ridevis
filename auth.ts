@@ -1,6 +1,6 @@
 import { DrizzleAdapter } from '@/lib/auth/drizzle-adapter'
 import { db } from '@/db'
-import NextAuth, { DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import Strava from 'next-auth/providers/strava'
 
 export const { handlers: { GET, POST }, auth } = NextAuth({
@@ -20,6 +20,14 @@ export const { handlers: { GET, POST }, auth } = NextAuth({
     })],
     session: {
         strategy: "database"
+    },
+    callbacks: {
+        async session({session, user}) {
+            if (session?.user){
+                session.user.id = user.id
+            }
+            return session
+        }
     }
 })
 
